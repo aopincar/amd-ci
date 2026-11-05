@@ -32,6 +32,9 @@ pci_devices: []
 wait_timeout: 3600
 version_channel: stable
 
+# Debug logging: enable verbose output from kcli and openshift-install
+debug: false
+
 # VM snapshot caching: restore a pre-built OCP cluster instead of deploying from scratch.
 # When enabled, the first job for an OCP version does a full deploy + base operator install
 # (NFD, KMM, MachineConfig), takes a VM snapshot, then continues. Subsequent jobs for the

@@ -62,6 +62,7 @@ def deploy_cluster(
     pci_devices: Optional[List[str]],
     libvirt_pool_path: Optional[str] = None,
     min_free_space_gb: float = DEFAULT_MIN_FREE_SPACE_GB,
+    debug: bool = False,
 ) -> str:
     """
     Main deployment flow, driven by the kcli parameters.
@@ -80,6 +81,7 @@ def deploy_cluster(
         libvirt_pool_path: Optional explicit override for the libvirt default storage
             pool directory. Leave unset to auto-select the mount with the most free space.
         min_free_space_gb: Minimum free space (GB) required for a storage location
+        debug: Enable debug logging for kcli (adds --debug flag)
 
     Returns:
         The actual deployed OCP version string (e.g. "4.22.1").
@@ -121,12 +123,14 @@ def deploy_cluster(
             pci_devices=pci_devices,
             libvirt_pool_path=libvirt_pool_path,
             min_free_space_gb=min_free_space_gb,
+            debug=debug,
         )
     else:
         return deploy_local(
             params=params,
             ctlplanes=ctlplanes,
             workers=workers,
+            debug=debug,
         )
 
 
@@ -151,6 +155,7 @@ def deploy_local(
     params: Dict[str, Any],
     ctlplanes: int,
     workers: int,
+    debug: bool = False,
 ) -> str:
     """Deploy OpenShift cluster locally using kcli.
 
@@ -161,10 +166,15 @@ def deploy_local(
     topology = get_cluster_topology_description(ctlplanes, workers)
 
     # Build kcli command with all parameters via -P flags
-    kcli_cmd = ["kcli", "create", "cluster", "openshift"]
+    kcli_cmd = ["kcli"]
+    if debug:
+        kcli_cmd.append("--debug")
+    kcli_cmd.extend(["create", "cluster", "openshift"])
     kcli_cmd.extend(build_kcli_params(params))
-    
+
     print(f"\nStarting OpenShift deployment [{topology}] with kcli...")
+    if debug:
+        print("  Debug logging enabled")
     print(f"  kcli command: {' '.join(kcli_cmd)}")
     run(kcli_cmd, check=True)
 
@@ -215,6 +225,7 @@ def deploy_remote(
     pci_devices: Optional[List[str]] = None,
     libvirt_pool_path: Optional[str] = None,
     min_free_space_gb: float = DEFAULT_MIN_FREE_SPACE_GB,
+    debug: bool = False,
 ) -> str:
     """Deploy OpenShift cluster on a remote libvirt host.
 
@@ -248,6 +259,8 @@ def deploy_remote(
     print(f"Wait Timeout: {wait_timeout}s")
     if ssh_key:
         print(f"SSH Key: {ssh_key}")
+    if debug:
+        print("Debug logging: enabled")
     print(f"{'='*60}\n")
 
     # Step 1: Setup remote host (idempotent)
@@ -278,10 +291,13 @@ def deploy_remote(
     # Step 4: Deploy the cluster
     print(f"\nStep 4: Deploying OpenShift cluster [{topology}]...")
     print("Starting kcli deployment (monitoring will be done via remote host)...")
-    
-    kcli_cmd = ["kcli", "-C", kcli_client, "create", "cluster", "openshift"]
+
+    kcli_cmd = ["kcli"]
+    if debug:
+        kcli_cmd.append("--debug")
+    kcli_cmd.extend(["-C", kcli_client, "create", "cluster", "openshift"])
     kcli_cmd.extend(build_kcli_params(params))
-    
+
     print(f"  kcli command: {' '.join(kcli_cmd)}")
     print("\n  Starting kcli in background...")
     

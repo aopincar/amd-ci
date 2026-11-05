@@ -97,8 +97,8 @@ class ClusterConfig:
     """Complete cluster configuration.
 
     All fields are required and must be set explicitly in the YAML config file,
-    except for ``snapshot`` and ``must_gather`` which are optional and have
-    sensible defaults.
+    except for ``snapshot``, ``must_gather``, and ``debug`` which are optional
+    and have sensible defaults.
     """
 
     ocp_version: str
@@ -119,6 +119,7 @@ class ClusterConfig:
     operators: OperatorsConfig
     snapshot: SnapshotConfig
     must_gather: MustGatherConfig
+    debug: bool = False
 
 def _expand_path(path: str | None) -> str | None:
     """Expand ~ and environment variables in a path."""
@@ -275,6 +276,8 @@ def parse_config(raw_config: dict[str, Any]) -> ClusterConfig:
             artifact_dir=_expand_path(must_gather_data.get("artifact_dir", "./must-gather-output")),
         )
 
+        debug = raw_config.get("debug", False)
+
         return ClusterConfig(
             ocp_version=raw_config["ocp_version"],
             pull_secret_path=_expand_path(raw_config["pull_secret_path"]),
@@ -294,6 +297,7 @@ def parse_config(raw_config: dict[str, Any]) -> ClusterConfig:
             operators=operators,
             snapshot=snapshot,
             must_gather=must_gather,
+            debug=debug,
         )
     except KeyError as exc:
         raise KeyError(

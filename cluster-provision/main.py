@@ -289,6 +289,7 @@ def _deploy_with_snapshot(config: ClusterConfig, ocp_version: str) -> None:
             ssh_key=config.remote.ssh_key_path,
             libvirt_pool_path=config.remote.libvirt_pool_path,
             min_free_space_gb=config.remote.min_free_space_gb,
+            debug=config.debug,
         )
 
         print("\nInstalling base operators for snapshot...")
@@ -376,6 +377,7 @@ def cmd_deploy(config: ClusterConfig, config_file: str) -> int:
             ssh_key=config.remote.ssh_key_path,
             libvirt_pool_path=config.remote.libvirt_pool_path,
             min_free_space_gb=config.remote.min_free_space_gb,
+            debug=config.debug,
         )
 
         if actual_version and actual_version != ocp_version:

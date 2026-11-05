@@ -61,6 +61,7 @@ workers: 0
 | `pci_devices` | `[]` | PCI devices for GPU passthrough |
 | `wait_timeout` | `3600` | Timeout (seconds) waiting for cluster ready |
 | `version_channel` | `stable` | OCP release channel (stable, fast, candidate) |
+| `debug` | `false` | Enable verbose output from kcli and openshift-install |
 
 ### Local Deployment
 
@@ -129,6 +130,34 @@ worker:
   numcpus: 16
   memory: 65536
 ```
+
+### Debug Logging
+
+Enable verbose output from kcli and openshift-install for troubleshooting deployments:
+
+```yaml
+ocp_version: "4.20"
+pull_secret_path: ~/keys/pull-secret.json
+
+# Enable debug logging
+debug: true
+```
+
+When `debug: true` is set:
+- The kcli command will include the `--debug` flag
+- Verbose output from both kcli and openshift-install will be displayed
+- Useful for troubleshooting deployment issues
+
+Example:
+```bash
+# Enable debug in your config
+echo "debug: true" >> cluster-config.yaml
+
+# Deploy with debug logging
+make cluster-deploy CONFIG_FILE_PATH=cluster-config.yaml
+```
+
+By default, `debug` is set to `false` (standard info-level logging).
 
 ### Commands
 
